@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>ChebU-chat</title>
+<style>
+body {
+  margin:0;
+  font-family: Arial;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  color:white;
+  background: url('https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExczV4ZG9rZ3lzenNsdnk4OWh0Y3cxbXNlczhvOG54ODVxb2t2bGQybyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/BHNfhgU63qrks/giphy.gif') no-repeat center center fixed;
+  background-size: cover;
+  position:relative;
+}
+
+/* Полупрозрачный слой для читаемости */
+#overlay {
+  position:absolute;
+  top:0; left:0; right:0; bottom:0;
+  background: rgba(0,0,0,0.5);
+  z-index:1;
+}
+
+/* Гифка слева от блоков (увеличена в 2 раза) */
+#leftGif {
+  position:fixed;
+  top:50%;
+  left:20px;
+  width:120px;
+  height:400px;
+  object-fit:cover;
+  transform:translateY(-50%);
+  z-index:2;
+}
+
+/* Гифка в верхнем правом углу */
+#cornerGif {
+  position:fixed;
+  top:10px;
+  right:10px;
+  width:240px;
+  height:240px;
+  z-index:3;
+}
+
+/* Новая гифка в правом нижнем углу */
+#bottomRightGif {
+  position:fixed;
+  bottom:10px;
+  right:10px;
+  width:150px;
+  height:150px;
+  z-index:3;
+}
+
+.container {
+  display:flex;
+  flex-direction:column;
+  gap:20px;
+  z-index:2;
+  position:relative;
+  align-items:center;
+}
+
+#auth, #chatUI {
+  padding:20px;
+  width:300px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  background: rgba(30,30,30,0.85);
+  border-radius:8px;
+}
+
+#title {
+  font-size:24px; 
+  margin-bottom:10px; 
+  height:30px; 
+  overflow:hidden; 
+  white-space:nowrap; 
+  border-right: 2px solid #4CAF50;
+  box-sizing: border-box;
+}
+
+input { 
+  padding:4px; 
+  margin:3px 0; 
+  width:90%; 
+  border:1px solid black; 
+  border-radius:4px; 
+  background:#ccc; 
+  font-size:13px; 
+  color:black;
+}
+
+button { 
+  padding:4px; 
+  margin:3px 2px 3px 0; 
+  width:42%; 
+  background:#ddd; 
+  color:black; 
+  border:1px solid black; 
+  border-radius:4px; 
+  font-size:12px; 
+  cursor:pointer; 
+}
+
+#chat { flex:1; overflow-y:auto; padding:10px; width:100%; }
+.message { margin-bottom:6px; padding:6px; background:#333; border-radius:6px; word-break: break-word; }
+.hidden { display:none; }
+
+#footer {
+  z-index:2;
+  position:fixed;
+  bottom:10px;
+  font-size:16px;
+  text-align:center;
+  width:100%;
+}
+#footer a {
+  color: #b266ff;
+  text-decoration:none;
+  font-weight:bold;
+}
+#footer a:hover { text-decoration:underline; }
+</style>
+</head>
+<body>
+
+<div id="overlay"></div>
+
+<img id="leftGif" src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWNqeWNtMGlkeGpzenp5OWJzMGJldnB4d2RmOGttMTdsN2RicXI0ZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/11lxCeKo6cHkJy/giphy.gif" alt="Side">
+<img id="cornerGif" src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExMWRqajNtY251cTlkazRkcm5qdTRrZWNxeTZ2YXhoem1kNnE2aXJ2ZCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/lRkGgX1WhWbk8zKXQE/giphy.gif" alt="ChebU">
+<img id="bottomRightGif" src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcW04dngycTcyNGo4cHhodWVncHBhcnpqM3pxMndscTQydXg5bTh0ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/fcU03QTYVVcJs1jKIa/giphy.gif" alt="Sticker">
+
+<div class="container">
+  <div id="auth">
+    <div id="title"></div>
+    <input id="nickname" placeholder="Ник">
+    <input id="email" placeholder="Email">
+    <input id="password" type="password" placeholder="Пароль">
+    <input id="chatKey" type="password" placeholder="Ключ чата">
+    <div style="width:100%; display:flex; justify-content:space-between;">
+      <button id="login">Войти</button>
+      <button id="register">Регистрация</button>
+    </div>
+  </div>
+
+  <div id="chatUI" class="hidden">
+    <div id="chat"></div>
+    <input id="message" placeholder="Сообщение...">
+    <div style="width:100%; display:flex; justify-content:space-between;">
+      <button id="send">Отправить</button>
+      <button id="logout">Выйти</button>
+    </div>
+  </div>
+</div>
+
+<div id="footer">
+  <a href="https://t.me/+EB8M8N-icHsyYjZi" target="_blank">Присоединяйся к нашему Telegram</a>
+</div>
+
+<script type="module">
+document.addEventListener("DOMContentLoaded", () => {
+  // Анимация ChebU-chat
+  const titleEl = document.getElementById("title");
+  const text = "ChebU-chat";
+  let i = 0, forward = true;
+  function typeAnimation() {
+    if(forward) { 
+      i++; 
+      titleEl.textContent = text.slice(0,i); 
+      if(i===text.length) forward=false; 
+    } else { 
+      i--; 
+      titleEl.textContent = text.slice(0,i); 
+      if(i===0) forward=true; 
+    }
+    setTimeout(typeAnimation,150);
+  }
+  typeAnimation();
+
+  // Firebase
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getFirestore, doc, setDoc, getDoc, collection, addDoc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBAmyR-jy2c4Ul25X1A6USk1CIFaHKBFHs",
+    authDomain: "web-mes-1b683.firebaseapp.com",
+    projectId: "web-mes-1b683",
+    storageBucket: "web-mes-1b683.firebasestorage.app",
+    messagingSenderId: "1039122673520",
+    appId: "1:1039122673520:web:b8e727d83957e2565ae9b5"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const authDiv = document.getElementById("auth");
+  const chatUI = document.getElementById("chatUI");
+  const chat = document.getElementById("chat");
+
+  const nicknameInput = document.getElementById("nickname");
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const chatKeyInput = document.getElementById("chatKey");
+  const messageInput = document.getElementById("message");
+
+  let aesKey = null;
+
+  async function getKeyFromPassword(password) {
+    const enc = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      "raw", enc.encode(password), "PBKDF2", false, ["deriveKey"]
+    );
+    return crypto.subtle.deriveKey(
+      { name:"PBKDF2", salt:enc.encode("static_salt_demo"), iterations:100000, hash:"SHA-256" },
+      keyMaterial, { name:"AES-GCM", length:256 }, false, ["encrypt","decrypt"]
+    );
+  }
+
+  async function encryptMessage(key, message) {
+    const enc = new TextEncoder();
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const ciphertext = await crypto.subtle.encrypt({ name:"AES-GCM", iv }, key, enc.encode(message));
+    return { iv: Array.from(iv), data: Array.from(new Uint8Array(ciphertext)) };
+  }
+
+  async function decryptMessage(key, encrypted) {
+    const enc = new TextDecoder();
+    const iv = new Uint8Array(encrypted.iv);
+    const data = new Uint8Array(encrypted.data);
+    const decrypted = await crypto.subtle.decrypt({ name:"AES-GCM", iv }, key, data);
+    return enc.decode(decrypted);
+  }
+
+  document.getElementById("register").onclick = async () => {
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+      const uid = userCredential.user.uid;
+      await setDoc(doc(db, "users", uid), {
+        uid: uid,
+        nickname: nicknameInput.value,
+        email: emailInput.value
+      });
+      alert("Регистрация успешна!");
+    } catch(e){ alert(e.message); }
+  };
+
+  document.getElementById("login").onclick = async () => {
+    try { await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value); }
+    catch(e){ alert(e.message); }
+  };
+
+  document.getElementById("logout").onclick = () => signOut(auth);
+
+  document.getElementById("send").onclick = async () => {
+    if(!aesKey) return alert("Введите ключ чата!");
+    const textMsg = messageInput.value;
+    const encrypted = await encryptMessage(aesKey, textMsg);
+    await addDoc(collection(db, "messages"), { uid: auth.currentUser.uid, nickname: nicknameInput.value, encrypted, created: Date.now() });
+    messageInput.value = "";
+  };
+
+  onAuthStateChanged(auth, async user => {
+    if(user){
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const nickname = userDoc.data().nickname;
+      aesKey = await getKeyFromPassword(chatKeyInput.value);
+      authDiv.classList.add("hidden");
+      chatUI.classList.remove("hidden");
+
+      const q = query(collection(db, "messages"), orderBy("created"));
+      onSnapshot(q, async snapshot => {
+        chat.innerHTML = "";
+        for(const docMsg of snapshot.docs){
+          const data = docMsg.data();
+          let textMsg = "";
+          try { textMsg = await decryptMessage(aesKey, data.encrypted); } catch(e){ textMsg="[Не удалось расшифровать]"; }
+          const div = document.createElement("div");
+          div.className = "message";
+          div.textContent = data.nickname + ": " + textMsg;
+          chat.appendChild(div);
+        }
+        chat.scrollTop = chat.scrollHeight;
+      });
+    } else {
+      authDiv.classList.remove("hidden");
+      chatUI.classList.add("hidden");
+      aesKey = null;
+    }
+  });
+});
+</script>
+
+</body>
+</html>
