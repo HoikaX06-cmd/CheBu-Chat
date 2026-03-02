@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ChebU Chat</title>
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+  overflow:hidden;
+  background:#222;
+  position:relative;
+}
+#title{
+  font-size:36px;
+  color:white;
+  display:flex;
+  justify-content:center;
+  margin-bottom:5px;
+  z-index:2;
+  position:relative;
+}
+.container{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  z-index:2;
+  position:relative;
+}
+.box{
+  background:#333;
+  padding:20px;
+  border-radius:15px;
+  width:450px;
+  margin-bottom:15px;
+  color:white;
+  position:relative;
+}
+.chatBox{
+  width:900px;
+  background:#333;
+  color:white;
+}
+input{
+  width:calc(100% - 10px);
+  padding:10px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border:none;
+}
+.messageInput{
+  width:70%;
+  display:inline-block;
+}
+button{
+  padding:10px 20px;
+  border:none;
+  border-radius:8px;
+  background:white;
+  color:black;
+  cursor:pointer;
+  transition:0.15s;
+}
+button:hover{
+  background:#ddd;
+}
+button:active{
+  transform:scale(0.95);
+  background:#aaa;
+}
+#chatWindow{
+  height:250px;
+  overflow-y:auto;
+  background:#111;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  color:white;
+}
+#errorMessage{
+  position:absolute;
+  top:10px;
+  right:10px;
+  background:#ff5555;
+  color:white;
+  padding:10px 15px;
+  border-radius:10px;
+  display:none;
+  transform: scale(0);
+  transition:0.3s transform;
+}
+#errorMessage.show{
+  display:block;
+  transform: scale(1);
+}
+#errorMessage span.close{
+  cursor:pointer;
+  margin-left:10px;
+  font-weight:bold;
+}
+#status{
+  margin-bottom:10px;
+}
+#statusText{
+  display:inline-block;
+}
+#statusCircle{
+  width:15px;
+  height:15px;
+  border-radius:50%;
+  display:inline-block;
+  margin-right:8px;
+  vertical-align:middle;
+  background:yellow;
+}
+#online{
+  position:absolute;
+  left:20px;
+  bottom:20px;
+  color:white;
+  z-index:3;
+}
+#leftGif{
+  position:absolute;
+  left:50px;
+  top:50%;
+  transform:translateY(-50%);
+  width:200px;
+  height:500px;
+  object-fit:cover;
+  z-index:1;
+}
+#rightSticker{
+  position:absolute;
+  right:20px;
+  bottom:20px;
+  width:120px;
+  z-index:2;
+}
+#telegram{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  bottom:20px;
+  font-size:20px;
+  z-index:2;
+}
+#telegram a{
+  color:#00aaff;
+  text-decoration:none;
+  font-weight:bold;
+}
+#backgroundGif{
+  position:absolute;
+  inset:0;
+  z-index:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+}
+#fsociety{
+  position:absolute;
+  top:10px;
+  right:20px;
+  font-weight:bold;
+  color:white;
+  z-index:2;
+}
+#inChatInfo{
+  color:green;
+  margin-top:5px;
+}
+</style>
+</head>
+<body>
+
+<img id="backgroundGif" src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExczV4ZG9rZ3lzenNsdnk4OWh0Y3cxbXNlczhvOG54ODVxb2t2bGQybyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/BHNfhgU63qrks/giphy.gif">
+<img id="leftGif" src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWNqeWNtMGlkeGpzenp5OWJzMGJldnB4d2RmOGttMTdsN2RicXI0ZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/11lxCeKo6cHkJy/giphy.gif">
+<img id="rightSticker" src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcW04dngycTcyNGo4cHhodWVncHBhcnpqM3pxMndscTQydXg5bTh0ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/fcU03QTYVVcJs1jKIa/giphy.gif">
+
+<div id="telegram">
+  <a href="https://t.me/+EB8M8N-icHsyYjZi" target="_blank">Присоединяйся к нашему Telegram</a>
+</div>
+
+<div id="fsociety">#fsociety</div>
+
+<div class="container">
+<div id="title"></div>
+
+<div class="box">
+<div id="status">
+<span id="statusCircle"></span><span id="statusText">На сайте</span>
+</div>
+<input id="nickname" placeholder="Nickname">
+<input id="password" type="password" placeholder="Password">
+<button id="register">Регистрация</button>
+<button id="login">Вход</button>
+<button id="logout">Выйти</button>
+<div id="errorMessage">⚠️ Данного чата не существует! <span class="close">✖</span></div>
+<div id="inChatInfo"></div>
+</div>
+
+<div class="box chatBox">
+<input id="chatKey" placeholder="Ключ-название чата">
+<button id="createChat">Создать чат</button>
+<button id="joinChatBtn">Войти в чат</button>
+<button id="leaveChatBtn">Выйти из чата</button>
+<div id="chatWindow"></div>
+<input id="message" class="messageInput" placeholder="Сообщение">
+<button id="send">Отправить</button>
+</div>
+
+</div>
+
+<div id="online">
+В сети:
+<div id="onlineList"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, getDocs, where, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+// Firebase config
+const firebaseConfig={
+apiKey: "AIzaSyDhCtIbMMAg4PjUjRoMyu5ajpVqNSSEMto",
+  authDomain: "chebu-chat.firebaseapp.com",
+  projectId: "chebu-chat",
+  storageBucket: "chebu-chat.firebasestorage.app",
+  messagingSenderId: "947527460011",
+  appId: "1:947527460011:web:85434352aecc77ba8743ee"
+};
+
+const app=initializeApp(firebaseConfig);
+const db=getFirestore(app);
+const auth=getAuth(app);
+
+let currentChat=null;
+let nicknameValue=null;
+let unsubMessages=null;
+let unsubOnline=null;
+let onlineRef=null;
+
+const statusText=document.getElementById("statusText");
+const statusCircle=document.getElementById("statusCircle");
+const errorMessage=document.getElementById("errorMessage");
+const closeError=errorMessage.querySelector(".close");
+const inChatInfo=document.getElementById("inChatInfo");
+const chatWindow=document.getElementById("chatWindow");
+const onlineList=document.getElementById("onlineList");
+const nickname=document.getElementById("nickname");
+const password=document.getElementById("password");
+const chatKey=document.getElementById("chatKey");
+const message=document.getElementById("message");
+
+statusCircle.style.background="yellow";
+
+/* ChebU-chat анимация */
+const text="ChebU-chat";
+let i=0,del=false;
+function animate(){
+if(!del){
+title.innerText=text.slice(0,i++);
+if(i>text.length) del=true;
+}else{
+title.innerText=text.slice(0,i--);
+if(i<0) del=false;
+}
+setTimeout(animate,100);
+}
+animate();
+
+/* Закрытие ошибки */
+closeError.onclick=()=>{errorMessage.classList.remove("show");};
+
+/* Регистрация */
+document.getElementById("register").onclick=async()=>{
+const nick=nickname.value.trim();
+const pass=password.value;
+if(!nick||!pass){statusText.innerText="Заполните поля"; statusCircle.style.background="red"; return;}
+
+try{
+  // проверка уникальности ника
+  const q=query(collection(db,"users"),where("nickname","==",nick));
+  const snap=await getDocs(q);
+  if(!snap.empty){statusText.innerText="Ник уже занят"; statusCircle.style.background="red"; return;}
+
+  // создаём пользователя через Firebase Auth
+  const email=nick+"@chebu.fake"; // фейковый email для Auth
+  const userCredential=await createUserWithEmailAndPassword(auth,email,pass);
+  const uid=userCredential.user.uid;
+
+  await addDoc(collection(db,"users"),{uid,nickname:nick,password:pass});
+  statusText.innerText="Регистрация успешна!";
+  statusCircle.style.background="green";
+  nicknameValue=nick;
+}catch(e){statusText.innerText=e.message; statusCircle.style.background="red";}
+};
+
+/* Вход */
+document.getElementById("login").onclick=async()=>{
+const nick=nickname.value.trim();
+const pass=password.value;
+if(!nick||!pass){statusText.innerText="Заполните поля"; statusCircle.style.background="red"; return;}
+
+try{
+  const q=query(collection(db,"users"),where("nickname","==",nick),where("password","==",pass));
+  const snap=await getDocs(q);
+  if(snap.empty){statusText.innerText="Неверный ник или пароль"; statusText.style.color="red"; statusCircle.style.background="red"; return;}
+  nicknameValue=nick;
+  statusText.innerText="Вход выполнен!";
+  statusText.style.color="white";
+  statusCircle.style.background="green";
+}catch(e){statusText.innerText=e.message; statusCircle.style.background="red";}
+};
+
+/* Выйти */
+document.getElementById("logout").onclick=()=>{
+location.reload();
+};
+
+/* Создать чат */
+document.getElementById("createChat").onclick=()=>{
+if(!nicknameValue){alert("Сначала зарегистрируйтесь/войдите"); return;}
+currentChat=chatKey.value.trim();
+if(!currentChat){alert("Введите название чата"); return;}
+listenChat();
+document.getElementById("joinChatBtn").style.display="none";
+document.getElementById("leaveChatBtn").style.display="inline-block";
+inChatInfo.innerText="Вы в чате - "+currentChat;
+};
+
+/* Войти в чат */
+document.getElementById("joinChatBtn").onclick=async()=>{
+if(!nicknameValue){alert("Сначала зарегистрируйтесь/войдите"); return;}
+currentChat=chatKey.value.trim();
+if(!currentChat){alert("Введите название чата"); return;}
+const chatRef=collection(db,"chats",currentChat,"messages");
+const snap=await getDocs(chatRef);
+if(snap.empty){errorMessage.classList.add("show"); return;}
+listenChat();
+document.getElementById("joinChatBtn").style.display="none";
+document.getElementById("leaveChatBtn").style.display="inline-block";
+inChatInfo.innerText="Вы в чате - "+currentChat;
+};
+
+/* Выйти из чата */
+document.getElementById("leaveChatBtn").onclick=()=>{
+if(unsubMessages) unsubMessages();
+if(unsubOnline) unsubOnline();
+if(onlineRef) deleteDoc(onlineRef);
+chatWindow.innerHTML="";
+inChatInfo.innerText="";
+onlineList.innerHTML="";
+currentChat=null;
+document.getElementById("leaveChatBtn").style.display="none";
+document.getElementById("joinChatBtn").style.display="inline-block";
+};
+
+/* Отправка сообщений */
+document.getElementById("send").onclick=async()=>{
+if(!nicknameValue || !currentChat) return;
+if(!message.value.trim()) return;
+
+await addDoc(collection(db,"chats",currentChat,"messages"),{
+text:message.value,
+nickname:nicknameValue,
+created:Date.now()
+});
+message.value="";
+};
+
+/* Подписка на чат и онлайн */
+function listenChat(){
+const msgRef=collection(db,"chats",currentChat,"messages");
+unsubMessages=onSnapshot(query(msgRef,orderBy("created")),snap=>{
+chatWindow.innerHTML="";
+snap.forEach(d=>{const data=d.data(); chatWindow.innerHTML+="<div>"+data.nickname+": "+data.text+"</div>";});
+});
+
+// Онлайн
+onlineRef=doc(db,"chats",currentChat,"online",nicknameValue);
+setDoc(onlineRef,{active:true});
+unsubOnline=onSnapshot(collection(db,"users"),snap=>{
+onlineList.innerHTML="";
+snap.forEach(d=>{onlineList.innerHTML+="<div>"+d.data().nickname+"</div>";});
+});
+}
+</script>
+</body>
+</html>
