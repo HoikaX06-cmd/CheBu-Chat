@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>ChebU-chat</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:url("https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExczV4ZG9rZ3lzenNsdnk4OWh0Y3cxbXNlczhvOG54ODVxb2t2bGQybyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/BHNfhgU63qrks/giphy.gif") no-repeat center center fixed;
+  background-size:cover;
+}
+
+#overlay{
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,0.55);
+}
+
+.container{
+  position:relative;
+  z-index:2;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:20px;
+}
+
+/* фикс прыжков */
+#title{
+  font-size:36px;
+  color:white;
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.box{
+  background:rgba(255,255,255,0.12);
+  backdrop-filter:blur(5px);
+  padding:15px;
+  border-radius:10px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:center;
+  width:300px;
+}
+
+input{
+  padding:8px;
+  width:220px;
+  border-radius:5px;
+  border:1px solid black;
+}
+
+button{
+  padding:8px 14px;
+  border-radius:6px;
+  border:1px solid black;
+  cursor:pointer;
+  background:white;
+  transition:all 0.15s ease;
+}
+
+/* АНИМАЦИЯ КНОПОК */
+button:active{
+  transform:translateY(3px);
+  background:#d9d9d9;
+  box-shadow:inset 0 3px 6px rgba(0,0,0,0.3);
+}
+
+button:hover{
+  filter:brightness(0.95);
+}
+
+/* ЧАТ ШИРЕ */
+#chatWindow{
+  height:260px;
+  width:520px;
+  overflow-y:auto;
+  background:rgba(0,0,0,0.3);
+  color:white;
+  padding:8px;
+  border-radius:6px;
+}
+
+#message{
+  width:350px;
+}
+
+/* кнопка отправить шире */
+#send{
+  padding:8px 45px;
+}
+
+#telegram{
+  position:absolute;
+  bottom:20px;
+  font-size:18px;
+  color:#b57edc;
+}
+
+#telegram a{
+  color:#b57edc;
+  text-decoration:none;
+}
+
+#leftGif{
+  position:absolute;
+  top:10%;
+  left:10px;
+  width:160px;
+  height:420px;
+  object-fit:cover;
+  z-index:2;
+}
+
+#rightSticker{
+  position:absolute;
+  bottom:0;
+  right:0;
+  width:110px;
+  z-index:2;
+}
+
+#onlineBlock{
+  position:absolute;
+  bottom:10px;
+  left:10px;
+  color:white;
+  z-index:3;
+}
+
+#modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.6);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:5;
+}
+
+.modalContent{
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(6px);
+  padding:20px;
+  border-radius:10px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  align-items:center;
+  color:white;
+}
+</style>
+</head>
+
+<body>
+<div id="overlay"></div>
+
+<img id="leftGif" src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExbWNqeWNtMGlkeGpzenp5OWJzMGJldnB4d2RmOGttMTdsN2RicXI0ZiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/11lxCeKo6cHkJy/giphy.gif">
+<img id="rightSticker" src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExcW04dngycTcyNGo4cHhodWVncHBhcnpqM3pxMndscTQydXg5bTh0ciZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/fcU03QTYVVcJs1jKIa/giphy.gif">
+
+<div class="container">
+
+<div id="title"></div>
+
+<div class="box">
+<input id="nickname" placeholder="Ник">
+<input id="email" placeholder="Email">
+<input id="password" type="password" placeholder="Пароль">
+
+<div>
+<button id="registerBtn">Регистрация</button>
+<button id="loginBtn">Войти</button>
+<button id="logoutBtn">Выйти</button>
+</div>
+
+<button id="openCreate">Создать чат</button>
+<input id="chatKeyInput" placeholder="Ключ чата">
+<button id="joinChatBtn">Войти в чат</button>
+<button id="leaveChatBtn" style="display:none;">Выйти из чата</button>
+</div>
+
+<div class="box" style="width:auto;">
+<div id="chatWindow"></div>
+<div>
+<input id="message" placeholder="Сообщение">
+<button id="send">Отправить</button>
+</div>
+</div>
+
+<div id="telegram">
+Присоединяйся к нашему 
+<a href="https://t.me/+EB8M8N-icHsyYjZi" target="_blank">Telegram</a>
+</div>
+
+</div>
+
+<div id="onlineBlock">
+<div>В сети:</div>
+<div id="onlineList"></div>
+</div>
+
+<div id="modal">
+<div class="modalContent">
+<div>Придумай ключ шифрования...</div>
+<input id="newChatKey">
+<button id="createChat">Создать чат</button>
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+apiKey:"AIzaSyBAmyR-jy2c4Ul25X1A6USk1CIFaHKBFHs",
+authDomain:"web-mes-1b683.firebaseapp.com",
+projectId:"web-mes-1b683",
+storageBucket:"web-mes-1b683.firebasestorage.app",
+messagingSenderId:"1039122673520",
+appId:"1:1039122673520:web:b8e727d83957e2565ae9b5"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentChat=null;
+let unsubMessages=null;
+let unsubOnline=null;
+let onlineRef=null;
+
+const title="ChebU-chat";
+let i=0,f=true;
+function anim(){
+if(f){i++;if(i===title.length)f=false;}
+else{i--;if(i===0)f=true;}
+document.getElementById("title").textContent=title.slice(0,i);
+setTimeout(anim,150);
+}
+anim();
+
+/* AUTH */
+registerBtn.onclick=()=>createUserWithEmailAndPassword(auth,email.value,password.value);
+loginBtn.onclick=()=>signInWithEmailAndPassword(auth,email.value,password.value);
+logoutBtn.onclick=()=>signOut(auth);
+
+/* CHAT */
+openCreate.onclick=()=>modal.style.display="flex";
+
+createChat.onclick=()=>{
+if(!auth.currentUser)return alert("Сначала войдите");
+currentChat=newChatKey.value.trim();
+modal.style.display="none";
+enterChat();
+};
+
+joinChatBtn.onclick=()=>{
+if(!auth.currentUser)return alert("Сначала войдите");
+currentChat=chatKeyInput.value.trim();
+enterChat();
+};
+
+leaveChatBtn.onclick=leaveChat;
+
+function enterChat(){
+if(!currentChat)return;
+
+joinChatBtn.style.display="none";
+leaveChatBtn.style.display="inline-block";
+
+const msgRef=collection(db,"chats",currentChat,"messages");
+const q=query(msgRef,orderBy("created"));
+
+unsubMessages=onSnapshot(q,snap=>{
+chatWindow.innerHTML="";
+snap.forEach(d=>{
+const data=d.data();
+chatWindow.innerHTML+=`<div>${data.nickname}: ${data.text}</div>`;
+});
+});
+
+onlineRef=doc(db,"chats",currentChat,"online",nickname.value);
+setDoc(onlineRef,{active:true});
+
+unsubOnline=onSnapshot(collection(db,"chats",currentChat,"online"),snap=>{
+onlineList.innerHTML="";
+snap.forEach(d=>{
+onlineList.innerHTML+=`<div>${d.id}</div>`;
+});
+});
+}
+
+function leaveChat(){
+if(unsubMessages)unsubMessages();
+if(unsubOnline)unsubOnline();
+if(onlineRef)deleteDoc(onlineRef);
+
+chatWindow.innerHTML="";
+onlineList.innerHTML="";
+currentChat=null;
+
+joinChatBtn.style.display="inline-block";
+leaveChatBtn.style.display="none";
+}
+
+send.onclick=async()=>{
+if(!auth.currentUser)return alert("Войдите в аккаунт");
+if(!currentChat)return alert("Выберите чат");
+if(!message.value.trim())return;
+
+await addDoc(collection(db,"chats",currentChat,"messages"),{
+text:message.value,
+nickname:nickname.value,
+created:Date.now()
+});
+message.value="";
+};
+</script>
+</body>
+</html>
